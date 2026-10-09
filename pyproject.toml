@@ -1,0 +1,20 @@
+[project]
+name = "projectforge"
+version = "0.1.0"
+description = "ProjectForge is a lightweight project collaboration platform for student teams."
+readme = "README.md"
+authors = [
+    { name = "Sriman", email = "srimank1905@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "django>=6.1.1",
+    "djangorestframework>=3.18.1",
+    "psycopg[binary]>=3.3.5",
+    "python-dotenv>=1.2.3",
+]
+
+[dependency-groups]
+dev = [
+    "typescript>=0.0.12",
+]

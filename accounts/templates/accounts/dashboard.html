@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | ProjectForge{% endblock %}
+
+{% block main_class %}dashboard-main{% endblock %}
+
+{% block nav_actions %}
+  {% if request.user.is_authenticated %}
+    <div class="nav-actions">
+      {% include "workspaces/_notification_bell.html" %}
+
+      <a
+        class="nav-button"
+        href="{% url 'workspaces:project_create' %}"
+      >
+        Create project
+      </a>
+
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+
+        <button class="nav-logout" type="submit">
+          Logout
+        </button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+  <div class="dashboard-header">
+    <div>
+      <p class="eyebrow">Your workspace</p>
+
+      <h1>Welcome back, {{ request.user.username }}.</h1>
+
+      <p class="dashboard-description">
+        Track your projects, milestones, and team progress from one place.
+      </p>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <article class="dashboard-card">
+      <p class="card-label">Projects</p>
+      <h2>{{ project_count }}</h2>
+      <p>Your active projects</p>
+    </article>
+
+    <article class="dashboard-card">
+      <p class="card-label">Tasks</p>
+      <h2>{{ task_count }}</h2>
+      <p>Tasks assigned to you</p>
+    </article>
+
+    <article class="dashboard-card">
+      <p class="card-label">Milestones</p>
+      <h2>{{ milestone_count }}</h2>
+      <p>Upcoming milestones</p>
+    </article>
+  </div>
+
+  <section class="projects-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Workspace activity</p>
+        <h2>Your projects</h2>
+      </div>
+    </div>
+
+    {% if projects %}
+      <div class="project-list">
+        {% for project in projects %}
+          <a
+            class="project-card project-card-link"
+            href="{% url 'workspaces:project_detail' project.slug %}"
+          >
+            <div class="project-card-header">
+              <div>
+                <h3>{{ project.name }}</h3>
+
+                <p class="project-visibility">
+                  {{ project.get_visibility_display }}
+                </p>
+              </div>
+            </div>
+
+            {% if project.description %}
+              <p class="project-description">
+                {{ project.description }}
+              </p>
+            {% else %}
+              <p class="project-description">
+                No description provided.
+              </p>
+            {% endif %}
+
+            <div class="project-card-footer">
+              <span>
+                Created {{ project.created_at|date:"M d, Y" }}
+              </span>
+
+              {% if project.owner == request.user %}
+                <span class="project-role">Owner</span>
+              {% else %}
+                <span class="project-role">Member</span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <h3>No projects yet</h3>
+
+        <p>
+          Create your first project to start organizing your team's work.
+        </p>
+
+        <a
+          class="button"
+          href="{% url 'workspaces:project_create' %}"
+        >
+          Create your first project
+        </a>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

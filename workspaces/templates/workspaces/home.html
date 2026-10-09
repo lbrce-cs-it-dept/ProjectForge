@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}ProjectForge{% endblock %}
+
+{% block main_class %}home-main{% endblock %}
+
+{% block nav_actions %}
+  {% if not request.user.is_authenticated %}
+    <div class="nav-actions">
+      <a
+        class="nav-link"
+        href="#"
+      >
+        Features
+      </a>
+
+      <a
+        class="nav-link"
+        href="#"
+      >
+        How it works
+      </a>
+
+      <a
+        class="nav-link"
+        href="{% url 'accounts:login' %}"
+      >
+        Sign in
+      </a>
+
+      <a
+        class="nav-button"
+        href="{% url 'accounts:signup' %}"
+      >
+        Create account
+      </a>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+
+  <div class="home-hero-content">
+
+    <p class="eyebrow">
+      Student team collaboration
+    </p>
+
+    <h1>
+      Build projects together
+      <span>without losing track of the work.</span>
+    </h1>
+
+    <p class="hero-description">
+      ProjectForge gives student teams one focused workspace
+      to organize projects, milestones, tasks, members,
+      discussions, and progress.
+    </p>
+
+  </div>
+
+  <div class="home-highlights">
+
+    <article class="home-highlight">
+      <span class="home-highlight-number">
+        01
+      </span>
+
+      <div>
+        <h2>Organize</h2>
+
+        <p>
+          Keep projects, milestones, and tasks together
+          in one workspace.
+        </p>
+      </div>
+    </article>
+
+    <article class="home-highlight">
+      <span class="home-highlight-number">
+        02
+      </span>
+
+      <div>
+        <h2>Collaborate</h2>
+
+        <p>
+          Work with your team through members,
+          assignments, and task discussions.
+        </p>
+      </div>
+    </article>
+
+    <article class="home-highlight">
+      <span class="home-highlight-number">
+        03
+      </span>
+
+      <div>
+        <h2>Stay informed</h2>
+
+        <p>
+          Follow project activity and receive
+          notifications about important updates.
+        </p>
+      </div>
+    </article>
+
+  </div>
+
+</section>
+{% endblock %}

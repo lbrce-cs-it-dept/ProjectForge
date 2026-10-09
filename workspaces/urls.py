@@ -1,0 +1,89 @@
+from django.urls import path
+
+from . import views
+
+app_name = "workspaces"
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path(
+        "notifications/",
+        views.notifications,
+        name="notifications",
+    ),
+    path(
+        "notifications/<int:notification_id>/read/",
+        views.notification_read,
+        name="notification_read",
+    ),
+    path(
+        "notifications/read-all/",
+        views.notifications_read_all,
+        name="notifications_read_all",
+    ),
+    path(
+        "projects/create/",
+        views.project_create,
+        name="project_create",
+    ),
+    path(
+        "projects/<slug:slug>/",
+        views.project_detail,
+        name="project_detail",
+    ),
+    path(
+        "projects/<slug:slug>/edit/",
+        views.project_edit,
+        name="project_edit",
+    ),
+    path(
+        "projects/<slug:slug>/delete/",
+        views.project_delete,
+        name="project_delete",
+    ),
+    path(
+        "projects/<slug:slug>/milestones/create/",
+        views.milestone_create,
+        name="milestone_create",
+    ),
+    path(
+        "projects/<slug:slug>/milestones/<int:milestone_id>/edit/",
+        views.milestone_edit,
+        name="milestone_edit",
+    ),
+    path(
+        "projects/<slug:slug>/milestones/<int:milestone_id>/delete/",
+        views.milestone_delete,
+        name="milestone_delete",
+    ),
+    path(
+        "projects/<slug:slug>/tasks/create/",
+        views.task_create,
+        name="task_create",
+    ),
+    path(
+        "projects/<slug:slug>/tasks/<int:task_id>/edit/",
+        views.task_edit,
+        name="task_edit",
+    ),
+    path(
+        "projects/<slug:slug>/tasks/<int:task_id>/",
+        views.task_detail,
+        name="task_detail",
+    ),
+    path(
+        "projects/<slug:slug>/tasks/<int:task_id>/delete/",
+        views.task_delete,
+        name="task_delete",
+    ),
+    path(
+        "projects/<slug:slug>/members/add/",
+        views.member_add,
+        name="member_add",
+    ),
+    path(
+        "projects/<slug:slug>/members/<int:membership_id>/remove/",
+        views.member_remove,
+        name="member_remove",
+    ),
+]

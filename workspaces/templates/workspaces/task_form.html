@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if is_edit %}
+    Edit task | {{ project.name }} | ProjectForge
+  {% else %}
+    Create task | {{ project.name }} | ProjectForge
+  {% endif %}
+{% endblock %}
+
+{% block main_class %}dashboard-main{% endblock %}
+
+{% block nav_back %}
+  <a
+    class="nav-back"
+    href="{% url 'workspaces:project_detail' project.slug %}"
+    aria-label="Back to project"
+    title="Back to project"
+  >
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 12H5"></path>
+      <path d="M12 19l-7-7 7-7"></path>
+    </svg>
+  </a>
+{% endblock %}
+
+{% block nav_actions %}
+  {% if request.user.is_authenticated %}
+    <div class="nav-actions">
+      <a
+        class="nav-button"
+        href="{% url 'workspaces:project_create' %}"
+      >
+        Create project
+      </a>
+
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+
+        <button class="nav-logout" type="submit">
+          Logout
+        </button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="task-create-page">
+  <div class="task-create-header">
+    <div>
+      <p class="eyebrow">Project planning</p>
+
+      <h1>
+          {% if is_edit %}
+            Edit task
+          {% else %}
+            Create task
+          {% endif %}
+      </h1>
+
+      <p class="task-create-description">
+        {% if is_edit %}
+          Update this task in
+        {% else %}
+          Add a task to
+        {% endif %}
+      <strong>{{ project.name }}</strong>.
+      </p>
+    </div>
+  </div>
+
+  <div class="task-form-card">
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="form-error">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <section class="task-form-section">
+        <div class="task-form-section-header">
+          <div class="task-form-section-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M4 6h16"></path>
+              <path d="M4 12h16"></path>
+              <path d="M4 18h10"></path>
+            </svg>
+          </div>
+
+          <div>
+            <h2>Task details</h2>
+
+            <p>
+              Give your task a clear title and description.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.title.id_for_label }}">
+            Title
+          </label>
+
+          {{ form.title }}
+
+          {% for error in form.title.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.description.id_for_label }}">
+            Description
+          </label>
+
+          {{ form.description }}
+
+          {% for error in form.description.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="task-form-section">
+        <div class="task-form-section-header">
+          <div class="task-form-section-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 3v18"></path>
+              <path d="M3 12h18"></path>
+            </svg>
+          </div>
+
+          <div>
+            <h2>Organization</h2>
+
+            <p>
+              Connect this task to a project milestone.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.milestone.id_for_label }}">
+            Milestone
+          </label>
+
+          {{ form.milestone }}
+
+          {% for error in form.milestone.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="task-form-section">
+        <div class="task-form-section-header">
+          <div class="task-form-section-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+              ></circle>
+
+              <path d="M12 7v5l3 2"></path>
+            </svg>
+          </div>
+
+          <div>
+            <h2>Status and priority</h2>
+
+            <p>
+              Set the current state and importance of this task.
+            </p>
+          </div>
+        </div>
+
+        <div class="task-form-two-column">
+          <div class="form-field">
+            <label for="{{ form.status.id_for_label }}">
+              Status
+            </label>
+
+            {{ form.status }}
+
+            {% for error in form.status.errors %}
+              <p class="form-error">{{ error }}</p>
+            {% endfor %}
+          </div>
+
+          <div class="form-field">
+            <label for="{{ form.priority.id_for_label }}">
+              Priority
+            </label>
+
+            {{ form.priority }}
+
+            {% for error in form.priority.errors %}
+              <p class="form-error">{{ error }}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <section class="task-form-section">
+        <div class="task-form-section-header">
+          <div class="task-form-section-icon" aria-hidden="true">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 21a8 8 0 0 0-16 0"></path>
+              <circle
+                cx="12"
+                cy="7"
+                r="4"
+              ></circle>
+            </svg>
+          </div>
+
+          <div>
+            <h2>Assignment</h2>
+
+            <p>
+              Assign this task to a member of the project.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.assignee.id_for_label }}">
+            Assignee
+          </label>
+
+          {{ form.assignee }}
+
+          {% for error in form.assignee.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </section>
+
+      <div class="task-form-actions">
+        <a
+          class="button secondary-button"
+          href="{% url 'workspaces:project_detail' project.slug %}"
+        >
+          Cancel
+        </a>
+
+        <button
+          class="button task-submit-button"
+          type="submit"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
+          </svg>
+
+          {% if is_edit %}
+            Update task
+          {% else %}
+            Create task
+          {% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications | ProjectForge{% endblock %}
+
+{% block main_class %}dashboard-main{% endblock %}
+
+{% block nav_back %}
+  <a
+    class="nav-back"
+    href="{% url 'accounts:dashboard' %}"
+    aria-label="Back to dashboard"
+    title="Back to dashboard"
+  >
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 12H5"></path>
+      <path d="M12 19l-7-7 7-7"></path>
+    </svg>
+  </a>
+{% endblock %}
+
+{% block nav_actions %}
+  {% if request.user.is_authenticated %}
+    <div class="nav-actions">
+      {% include "workspaces/_notification_bell.html" %}
+
+      <a
+        class="nav-button"
+        href="{% url 'workspaces:project_create' %}"
+      >
+        Create project
+      </a>
+
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+
+        <button class="nav-logout" type="submit">
+          Logout
+        </button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+
+  <div class="dashboard-header">
+    <div>
+      <p class="eyebrow">Workspace updates</p>
+
+      <h1>Notifications</h1>
+
+      <p class="dashboard-description">
+        Stay up to date with activity that needs your attention.
+      </p>
+    </div>
+
+    {% if unread_count %}
+      <form
+        method="post"
+        action="{% url 'workspaces:notifications_read_all' %}"
+      >
+        {% csrf_token %}
+
+        <button
+          class="button secondary-button"
+          type="submit"
+        >
+          Mark all as read
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  <section class="projects-section">
+
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Your updates</p>
+
+        <h2>
+          {% if unread_count %}
+            {{ unread_count }} unread
+          {% else %}
+            All caught up
+          {% endif %}
+        </h2>
+      </div>
+    </div>
+
+    {% if notifications %}
+
+      <div class="notification-list">
+
+        {% for notification in notifications %}
+
+          <article
+            class="notification-item{% if not notification.is_read %} notification-unread{% endif %}"
+          >
+
+            <div
+              class="notification-icon notification-icon-{{ notification.notification_type }}"
+              aria-hidden="true"
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                {% if notification.notification_type == "task_assigned" %}
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+
+                {% elif notification.notification_type == "comment_added" %}
+                  <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+
+                {% elif notification.notification_type == "member_added" %}
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <line x1="19" y1="8" x2="19" y2="14"></line>
+                  <line x1="22" y1="11" x2="16" y2="11"></line>
+
+                {% elif notification.notification_type == "task_completed" %}
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M8 12l2.5 2.5L16 9"></path>
+
+                {% elif notification.notification_type == "milestone_due" %}
+                  <rect
+                    x="3"
+                    y="4"
+                    width="18"
+                    height="18"
+                    rx="2"
+                  ></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+
+                {% else %}
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                {% endif %}
+              </svg>
+            </div>
+
+            <div class="notification-content">
+
+              <div class="notification-header">
+
+                <div>
+                  <h3>{{ notification.title }}</h3>
+
+                  <p class="notification-message">
+                    {{ notification.message }}
+                  </p>
+                </div>
+
+                {% if not notification.is_read %}
+                  <span class="notification-unread-dot"></span>
+                {% endif %}
+
+              </div>
+
+              <div class="notification-footer">
+
+                <span>
+                  {{ notification.created_at|date:"M d, Y · g:i A" }}
+                </span>
+
+                {% if notification.target_url %}
+                  <form
+                    method="post"
+                    action="{% url 'workspaces:notification_read' notification.id %}"
+                  >
+                    {% csrf_token %}
+
+                    <button
+                      class="notification-action"
+                      type="submit"
+                    >
+                      {% if notification.is_read %}
+                        Open
+                      {% else %}
+                        View
+                      {% endif %}
+                    </button>
+                  </form>
+                {% endif %}
+
+              </div>
+
+            </div>
+
+          </article>
+
+        {% endfor %}
+
+      </div>
+
+    {% else %}
+
+      <div class="empty-state">
+
+        <div
+          class="notification-empty-icon"
+          aria-hidden="true"
+        >
+          <svg
+            width="30"
+            height="30"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </div>
+
+        <h3>No notifications yet</h3>
+
+        <p>
+          Notifications about tasks, comments, members, and other
+          project activity will appear here.
+        </p>
+
+      </div>
+
+    {% endif %}
+
+  </section>
+
+</section>
+{% endblock %}

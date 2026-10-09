@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if is_edit %}
+    Edit milestone | {{ project.name }} | ProjectForge
+  {% else %}
+    Create milestone | {{ project.name }} | ProjectForge
+  {% endif %}
+{% endblock %}
+
+{% block main_class %}dashboard-main{% endblock %}
+
+{% block nav_back %}
+  <a
+    class="nav-back"
+    href="{% url 'workspaces:project_detail' project.slug %}"
+    aria-label="Back to project"
+    title="Back to project"
+  >
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 12H5"></path>
+      <path d="M12 19l-7-7 7-7"></path>
+    </svg>
+  </a>
+{% endblock %}
+
+{% block nav_actions %}
+  {% if request.user.is_authenticated %}
+    <div class="nav-actions">
+      <a
+        class="nav-button"
+        href="{% url 'workspaces:project_create' %}"
+      >
+        Create project
+      </a>
+
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+
+        <button class="nav-logout" type="submit">
+          Logout
+        </button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+  <div class="dashboard-header">
+    <div>
+      <p class="eyebrow">Project milestone</p>
+
+      {% if is_edit %}
+        <h1>Edit milestone</h1>
+
+        <p class="dashboard-description">
+          Update this milestone in {{ project.name }}.
+        </p>
+      {% else %}
+        <h1>Create milestone</h1>
+
+        <p class="dashboard-description">
+          Add a milestone to {{ project.name }}.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+
+  <section class="projects-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">{{ project.name }}</p>
+
+        {% if is_edit %}
+          <h2>Update milestone details</h2>
+        {% else %}
+          <h2>Milestone details</h2>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="project-card">
+      <form method="post">
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        <div class="form-field">
+          <label for="{{ form.title.id_for_label }}">
+            Title
+          </label>
+
+          {{ form.title }}
+
+          {% for error in form.title.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.description.id_for_label }}">
+            Description
+          </label>
+
+          {{ form.description }}
+
+          {% for error in form.description.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="form-field">
+          <label for="{{ form.due_date.id_for_label }}">
+            Due date
+          </label>
+
+          {{ form.due_date }}
+
+          {% for error in form.due_date.errors %}
+            <p class="form-error">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="project-actions">
+          <a
+            class="button secondary-button"
+            href="{% url 'workspaces:project_detail' project.slug %}"
+          >
+            Cancel
+          </a>
+
+          {% if is_edit %}
+            <button
+              class="button"
+              type="submit"
+            >
+              Save changes
+            </button>
+          {% else %}
+            <button
+              class="button"
+              type="submit"
+            >
+              Create milestone
+            </button>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </section>
+</section>
+{% endblock %}

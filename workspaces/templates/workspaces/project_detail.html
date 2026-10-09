@@ -1,0 +1,1187 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }} | ProjectForge{% endblock %}
+
+{% block main_class %}dashboard-main{% endblock %}
+
+{% block nav_back %}
+  <a
+    class="nav-back"
+    href="{% url 'accounts:dashboard' %}"
+    aria-label="Back to dashboard"
+    title="Back to dashboard"
+  >
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 12H5"></path>
+      <path d="M12 19l-7-7 7-7"></path>
+    </svg>
+  </a>
+{% endblock %}
+
+{% block nav_actions %}
+  {% if request.user.is_authenticated %}
+    <div class="nav-actions">
+      {% include "workspaces/_notification_bell.html" %}
+
+      <a
+        class="nav-button"
+        href="{% url 'workspaces:project_create' %}"
+      >
+        Create project
+      </a>
+
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+
+        <button class="nav-logout" type="submit">
+          Logout
+        </button>
+      </form>
+    </div>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="dashboard-page">
+
+  <div class="dashboard-header">
+    <div>
+      <p class="eyebrow">Project workspace</p>
+
+      <h1>{{ project.name }}</h1>
+
+      <p class="dashboard-description">
+        {{ project.description }}
+      </p>
+    </div>
+
+    {% if project.owner == request.user %}
+      <div class="project-actions">
+        <a
+          class="button"
+          href="{% url 'workspaces:project_edit' project.slug %}"
+        >
+          Edit
+        </a>
+
+        <button
+          class="button danger-button"
+          id="delete-project-button"
+          type="button"
+        >
+          Delete
+        </button>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="dashboard-grid">
+
+    <article class="dashboard-card">
+      <p class="card-label">Visibility</p>
+
+      <h2>{{ project.get_visibility_display }}</h2>
+
+      <p>Project access level</p>
+    </article>
+
+    <article class="dashboard-card">
+      <p class="card-label">Members</p>
+
+      <h2>{{ members|length }}</h2>
+
+      <p>People in this project</p>
+    </article>
+
+    <article class="dashboard-card task-dashboard-card">
+      <div class="task-card-heading">
+        <div
+          class="task-card-icon"
+          aria-hidden="true"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect
+              x="4"
+              y="3"
+              width="16"
+              height="18"
+              rx="2"
+            ></rect>
+
+            <path d="M8 8h8"></path>
+            <path d="M8 12h8"></path>
+            <path d="M8 16h5"></path>
+          </svg>
+        </div>
+
+        <p class="card-label">Tasks</p>
+      </div>
+
+      <h2>{{ project.tasks.count }}</h2>
+
+      <p>Tasks in this project</p>
+    </article>
+
+  </div>
+
+  <section class="projects-section">
+
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Project information</p>
+
+        <h2>Overview</h2>
+      </div>
+    </div>
+
+    <div class="project-card">
+
+      <div class="project-card-header">
+        <div>
+          <h3>{{ project.name }}</h3>
+
+          <p class="project-visibility">
+            {{ project.get_visibility_display }}
+          </p>
+        </div>
+      </div>
+
+      <p class="project-description">
+        {{ project.description }}
+      </p>
+
+      <div class="project-card-footer">
+        <span>
+          Created {{ project.created_at|date:"M d, Y" }}
+        </span>
+
+        {% if project.owner == request.user %}
+          <span class="project-role">Owner</span>
+        {% else %}
+          <span class="project-role">Member</span>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- =====================================================
+       ACTIVITY
+       ===================================================== -->
+
+  <section class="projects-section activity-section">
+
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Project history</p>
+
+        <h2>Recent Activity</h2>
+      </div>
+    </div>
+
+    {% if activities %}
+
+      <div class="activity-list">
+
+        {% for activity in activities %}
+
+          <article class="activity-item">
+
+            <div
+              class="activity-marker"
+              aria-hidden="true"
+            ></div>
+
+            <div class="activity-content">
+
+              <div class="activity-header">
+
+                <div class="activity-main">
+
+                  <div class="activity-actor">
+                    {% if activity.actor %}
+                      {{ activity.actor.username }}
+                    {% else %}
+                      Former member
+                    {% endif %}
+                  </div>
+
+                  <p class="activity-description">
+                    {{ activity.description }}
+                  </p>
+
+                </div>
+
+                <time
+                  class="activity-time"
+                  datetime="{{ activity.created_at|date:'c' }}"
+                >
+                  {{ activity.created_at|date:"M d, Y, g:i A" }}
+                </time>
+
+              </div>
+
+              <div class="activity-footer">
+
+                <span class="activity-type">
+                  {{ activity.get_action_display }}
+                </span>
+
+                <span class="activity-date">
+                  {{ activity.created_at|date:"M d, Y" }}
+                </span>
+
+              </div>
+
+            </div>
+
+          </article>
+
+        {% endfor %}
+
+      </div>
+
+    {% else %}
+
+      <div class="empty-state activity-empty-state">
+
+        <div
+          class="activity-empty-icon"
+          aria-hidden="true"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 12h3"></path>
+            <path d="M18 12h3"></path>
+            <path d="M6 12a6 6 0 0 1 12 0"></path>
+            <path d="M6 12a6 6 0 0 0 12 0"></path>
+            <circle
+              cx="12"
+              cy="12"
+              r="2"
+            ></circle>
+          </svg>
+        </div>
+
+        <h3>No activity yet</h3>
+
+        <p>
+          Project activity will appear here as work happens.
+        </p>
+
+      </div>
+
+    {% endif %}
+
+  </section>
+
+  <!-- =====================================================
+       MEMBERS
+       ===================================================== -->
+
+  <section class="projects-section members-section">
+
+    <div class="section-heading">
+
+      <div>
+        <p class="eyebrow">Project collaboration</p>
+
+        <h2>Members</h2>
+      </div>
+
+    </div>
+
+    {% if project.owner == request.user %}
+
+      <div class="project-card">
+
+        <div class="section-heading">
+
+          <div>
+            <p class="eyebrow">Add member</p>
+
+            <h3>Invite a project member</h3>
+
+            <p class="dashboard-description">
+              Add another registered user to this project.
+            </p>
+          </div>
+
+        </div>
+
+        {% if member_form %}
+
+          <form
+            method="post"
+            action="{% url 'workspaces:member_add' project.slug %}"
+          >
+
+            {% csrf_token %}
+
+            {% if member_form.non_field_errors %}
+              <div class="form-error">
+                {{ member_form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <div class="form-field">
+
+              <label for="{{ member_form.user.id_for_label }}">
+                User
+              </label>
+
+              {{ member_form.user }}
+
+              {% for error in member_form.user.errors %}
+                <p class="form-error">
+                  {{ error }}
+                </p>
+              {% endfor %}
+
+            </div>
+
+            <div class="task-form-actions">
+
+              <button
+                class="button"
+                type="submit"
+              >
+                Add member
+              </button>
+
+            </div>
+
+          </form>
+
+        {% endif %}
+
+      </div>
+
+    {% endif %}
+
+    <div class="milestone-list">
+
+      {% for membership in members %}
+
+        <article class="milestone-item">
+
+          <div
+            class="milestone-marker"
+            aria-hidden="true"
+          ></div>
+
+          <div class="milestone-content">
+
+            <div class="milestone-header">
+
+              <div>
+
+                <h3>
+                  {{ membership.user.username }}
+                </h3>
+
+                <p class="milestone-description">
+                  {% if membership.role == "lead" %}
+                    Project owner
+                  {% else %}
+                    Project member
+                  {% endif %}
+                </p>
+
+              </div>
+
+              <div class="milestone-due">
+
+                <span class="milestone-due-label">
+                  Role
+                </span>
+
+                <span class="milestone-due-date">
+                  {{ membership.get_role_display }}
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="milestone-footer">
+
+              <span class="milestone-type">
+                Member
+              </span>
+
+              {% if project.owner == request.user and membership.user != project.owner %}
+
+                <form
+                  method="post"
+                  action="{% url 'workspaces:member_remove' project.slug membership.id %}"
+                  onsubmit="return confirm('Remove {{ membership.user.username }} from this project?');"
+                >
+
+                  {% csrf_token %}
+
+                  <button
+                    class="button danger-button"
+                    type="submit"
+                  >
+                    Remove
+                  </button>
+
+                </form>
+
+              {% endif %}
+
+            </div>
+
+          </div>
+
+        </article>
+
+      {% empty %}
+
+        <div class="empty-state">
+
+          <h3>No members yet</h3>
+
+          <p>
+            Add members to start collaborating on this project.
+          </p>
+
+        </div>
+
+      {% endfor %}
+
+    </div>
+
+  </section>
+
+  <!-- =====================================================
+       TASKS
+       ===================================================== -->
+
+  <section class="projects-section tasks-section">
+
+    <div class="task-list-section-heading">
+
+      <div class="task-list-heading-content">
+        <p class="eyebrow">Project work</p>
+
+        <h2>Tasks</h2>
+      </div>
+
+      <a
+        class="button task-section-create-button"
+        href="{% url 'workspaces:task_create' project.slug %}"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 5v14"></path>
+          <path d="M5 12h14"></path>
+        </svg>
+
+        Create task
+      </a>
+
+    </div>
+
+    {% if project.tasks.exists %}
+
+      <div class="task-list">
+
+        {% for task in project.tasks.all %}
+
+          <article class="task-item">
+
+            <div class="task-item-main">
+
+              <div
+                class="task-status-indicator task-status-{{ task.status }}"
+                aria-hidden="true"
+              ></div>
+
+              <div class="task-item-content">
+
+                <div class="task-item-header">
+
+                  <div class="task-title-block">
+
+                    <h3>
+                      <a
+                        href="{% url 'workspaces:task_detail' project.slug task.pk %}"
+                      >
+                        {{ task.title }}
+                      </a>
+                    </h3>
+
+                    {% if task.description %}
+                      <p class="task-item-description">
+                        {{ task.description }}
+                      </p>
+                    {% else %}
+                      <p class="task-item-description task-item-description-muted">
+                        No description provided.
+                      </p>
+                    {% endif %}
+
+                  </div>
+
+                  <div class="task-badges">
+
+                    <span
+                      class="task-badge task-status-badge-{{ task.status }}"
+                    >
+                      {{ task.get_status_display }}
+                    </span>
+
+                    <span
+                      class="task-badge task-priority-badge-{{ task.priority }}"
+                    >
+                      {{ task.get_priority_display }}
+                    </span>
+
+                  </div>
+
+                </div>
+
+                <div class="task-item-meta">
+
+                  <span>
+                    <strong>Milestone:</strong>
+
+                    {% if task.milestone %}
+                      {{ task.milestone.title }}
+                    {% else %}
+                      No milestone
+                    {% endif %}
+                  </span>
+
+                  <span>
+                    <strong>Assignee:</strong>
+
+                    {% if task.assignee %}
+                      {{ task.assignee.username }}
+                    {% else %}
+                      Unassigned
+                    {% endif %}
+                  </span>
+
+                  <span>
+                    Created {{ task.created_at|date:"M d, Y" }}
+                  </span>
+
+                  <div class="task-actions">
+
+                    <a
+                      class="button secondary-button task-edit-button"
+                      href="{% url 'workspaces:task_edit' project.slug task.id %}"
+                    >
+                      Edit
+                    </a>
+
+                    <button
+                      class="button danger-button task-delete-button"
+                      type="button"
+                      data-task-id="{{ task.id }}"
+                      data-task-title="{{ task.title }}"
+                      data-task-delete-url="{% url 'workspaces:task_delete' project.slug task.id %}"
+                    >
+                      Delete
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </article>
+
+        {% endfor %}
+
+      </div>
+
+    {% else %}
+
+      <div class="empty-state task-empty-state">
+
+        <div
+          class="task-empty-icon"
+          aria-hidden="true"
+        >
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect
+              x="4"
+              y="3"
+              width="16"
+              height="18"
+              rx="2"
+            ></rect>
+
+            <path d="M8 8h8"></path>
+            <path d="M8 12h5"></path>
+            <path d="M8 16h4"></path>
+          </svg>
+        </div>
+
+        <h3>No tasks yet</h3>
+
+        <p>
+          Create your first task to start tracking work in this project.
+        </p>
+
+        <a
+          class="button"
+          href="{% url 'workspaces:task_create' project.slug %}"
+        >
+          Create task
+        </a>
+
+      </div>
+
+    {% endif %}
+
+  </section>
+
+  <!-- =====================================================
+       MILESTONES
+       ===================================================== -->
+
+  <section class="projects-section milestones-section">
+
+    <div class="section-heading milestone-section-heading">
+
+      <div>
+        <p class="eyebrow">Project planning</p>
+
+        <h2>Milestones</h2>
+      </div>
+
+      <a
+        class="button"
+        href="{% url 'workspaces:milestone_create' project.slug %}"
+      >
+        Create milestone
+      </a>
+
+    </div>
+
+    {% if project.milestones.exists %}
+
+      <div class="milestone-list">
+
+        {% for milestone in project.milestones.all %}
+
+          <article class="milestone-item">
+
+            <div
+              class="milestone-marker"
+              aria-hidden="true"
+            ></div>
+
+            <div class="milestone-content">
+
+              <div class="milestone-header">
+
+                <div>
+
+                  <h3>{{ milestone.title }}</h3>
+
+                  {% if milestone.description %}
+                    <p class="milestone-description">
+                      {{ milestone.description }}
+                    </p>
+                  {% else %}
+                    <p class="milestone-description">
+                      No description provided.
+                    </p>
+                  {% endif %}
+
+                </div>
+
+                <div class="milestone-due">
+
+                  <span class="milestone-due-label">
+                    Due date
+                  </span>
+
+                  {% if milestone.due_date %}
+                    <span class="milestone-due-date">
+                      {{ milestone.due_date|date:"M d, Y" }}
+                    </span>
+                  {% else %}
+                    <span class="milestone-due-date">
+                      No due date
+                    </span>
+                  {% endif %}
+
+                </div>
+
+              </div>
+
+              <div class="milestone-footer">
+
+                <span class="milestone-type">
+                  Milestone
+                </span>
+
+                <span>
+                  Created {{ milestone.created_at|date:"M d, Y" }}
+                </span>
+
+                <div class="milestone-actions">
+
+                  <a
+                    class="button secondary-button"
+                    href="{% url 'workspaces:milestone_edit' project.slug milestone.id %}"
+                  >
+                    Edit
+                  </a>
+
+                  <button
+                    class="button danger-button milestone-delete-button"
+                    type="button"
+                    data-milestone-id="{{ milestone.id }}"
+                    data-milestone-title="{{ milestone.title }}"
+                  >
+                    Delete
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </article>
+
+        {% endfor %}
+
+      </div>
+
+    {% else %}
+
+      <div class="empty-state milestone-empty-state">
+
+        <div
+          class="milestone-empty-icon"
+          aria-hidden="true"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="9"
+            ></circle>
+
+            <path d="M12 7v5l3 2"></path>
+          </svg>
+        </div>
+
+        <h3>No milestones yet</h3>
+
+        <p>
+          Create your first milestone to define an important stage of this
+          project.
+        </p>
+
+        <a
+          class="button"
+          href="{% url 'workspaces:milestone_create' project.slug %}"
+        >
+          Create milestone
+        </a>
+
+      </div>
+
+    {% endif %}
+
+  </section>
+
+</section>
+
+{% if project.owner == request.user %}
+
+  <div
+    class="delete-modal"
+    id="delete-project-modal"
+    hidden
+  >
+
+    <div
+      class="delete-modal-backdrop"
+      id="delete-modal-backdrop"
+    ></div>
+
+    <div
+      class="delete-modal-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-modal-title"
+      aria-describedby="delete-modal-description"
+    >
+
+      <button
+        class="delete-modal-close"
+        id="delete-modal-close"
+        type="button"
+        aria-label="Close delete confirmation"
+      >
+        <svg
+          width="19"
+          height="19"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M18 6L6 18"></path>
+          <path d="M6 6l12 12"></path>
+        </svg>
+      </button>
+
+      <div
+        class="delete-modal-icon"
+        aria-hidden="true"
+      >
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3 6h18"></path>
+          <path d="M8 6V4h8v2"></path>
+          <path d="M19 6l-1 14H6L5 6"></path>
+          <path d="M10 11v5"></path>
+          <path d="M14 11v5"></path>
+        </svg>
+      </div>
+
+      <div class="delete-modal-content">
+
+        <h2 id="delete-modal-title">
+          Delete this project?
+        </h2>
+
+        <p id="delete-modal-description">
+          This will permanently delete
+          <strong>&ldquo;{{ project.name }}&rdquo;</strong>
+          and all of its associated data. This action cannot be undone.
+        </p>
+
+      </div>
+
+      <div class="delete-modal-actions">
+
+        <button
+          class="button secondary-button"
+          id="delete-modal-cancel"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <form
+          method="post"
+          action="{% url 'workspaces:project_delete' project.slug %}"
+        >
+          {% csrf_token %}
+
+          <button
+            class="button danger-confirm-button"
+            type="submit"
+          >
+            Delete project
+          </button>
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+{% endif %}
+
+<div
+  class="delete-modal"
+  id="delete-milestone-modal"
+  hidden
+>
+
+  <div
+    class="delete-modal-backdrop"
+    id="delete-milestone-modal-backdrop"
+  ></div>
+
+  <div
+    class="delete-modal-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="delete-milestone-modal-title"
+    aria-describedby="delete-milestone-modal-description"
+  >
+
+    <button
+      class="delete-modal-close"
+      id="delete-milestone-modal-close"
+      type="button"
+      aria-label="Close milestone delete confirmation"
+    >
+      <svg
+        width="19"
+        height="19"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M18 6L6 18"></path>
+        <path d="M6 6l12 12"></path>
+      </svg>
+    </button>
+
+    <div
+      class="delete-modal-icon"
+      aria-hidden="true"
+    >
+      <svg
+        width="40"
+        height="40"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4h8v2"></path>
+        <path d="M19 6l-1 14H6L5 6"></path>
+        <path d="M10 11v5"></path>
+        <path d="M14 11v5"></path>
+      </svg>
+    </div>
+
+    <div class="delete-modal-content">
+
+      <h2 id="delete-milestone-modal-title">
+        Delete this milestone?
+      </h2>
+
+      <p id="delete-milestone-modal-description">
+        This will permanently delete
+        <strong id="delete-milestone-name"></strong>
+        from this project. This action cannot be undone.
+      </p>
+
+    </div>
+
+    <div class="delete-modal-actions">
+
+      <button
+        class="button secondary-button"
+        id="delete-milestone-modal-cancel"
+        type="button"
+      >
+        Cancel
+      </button>
+
+      <form
+        method="post"
+        id="delete-milestone-form"
+      >
+        {% csrf_token %}
+
+        <button
+          class="button danger-confirm-button"
+          type="submit"
+        >
+          Delete milestone
+        </button>
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div
+  class="delete-modal"
+  id="delete-task-modal"
+  hidden
+>
+
+  <div
+    class="delete-modal-backdrop"
+    id="delete-task-modal-backdrop"
+  ></div>
+
+  <div
+    class="delete-modal-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="delete-task-modal-title"
+    aria-describedby="delete-task-modal-description"
+  >
+
+    <button
+      class="delete-modal-close"
+      id="delete-task-modal-close"
+      type="button"
+      aria-label="Close task delete confirmation"
+    >
+      <svg
+        width="19"
+        height="19"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M18 6L6 18"></path>
+        <path d="M6 6l12 12"></path>
+      </svg>
+    </button>
+
+    <div
+      class="delete-modal-icon"
+      aria-hidden="true"
+    >
+      <svg
+        width="40"
+        height="40"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M3 6h18"></path>
+        <path d="M8 6V4h8v2"></path>
+        <path d="M19 6l-1 14H6L5 6"></path>
+        <path d="M10 11v5"></path>
+        <path d="M14 11v5"></path>
+      </svg>
+    </div>
+
+    <div class="delete-modal-content">
+
+      <h2 id="delete-task-modal-title">
+        Delete this task?
+      </h2>
+
+      <p id="delete-task-modal-description">
+        This will permanently delete
+        <strong id="delete-task-name"></strong>
+        from this project. This action cannot be undone.
+      </p>
+
+    </div>
+
+    <div class="delete-modal-actions">
+
+      <button
+        class="button secondary-button"
+        id="delete-task-modal-cancel"
+        type="button"
+      >
+        Cancel
+      </button>
+
+      <form
+        method="post"
+        id="delete-task-form"
+      >
+        {% csrf_token %}
+
+        <button
+          class="button danger-confirm-button"
+          type="submit"
+        >
+          Delete task
+        </button>
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
